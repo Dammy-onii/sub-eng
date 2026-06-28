@@ -1,26 +1,107 @@
 @import "tailwindcss";
 
+/*
+  Nomba Recur — Subscriptions Engine
+  Original design system (Stripe used only as structural reference).
+  Ink sidebar + light surfaces + teal/emerald accent.
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #fbfcfd;
+  --ink: #0b1220;
+  --ink-2: #16203a;
+  --text: #111827;
+  --text-muted: #5b6577;
+  --text-faint: #8b93a5;
+  --border: #e7e9ee;
+  --border-strong: #d6dae2;
+
+  --brand: #0fae93;        /* teal-emerald accent */
+  --brand-dark: #0a8a75;
+  --brand-soft: #e4f7f2;
+  --accent: #6c5ce7;       /* secondary violet */
+
+  --green: #15a06b;
+  --green-soft: #e3f6ec;
+  --amber: #c2890b;
+  --amber-soft: #fbf1d6;
+  --red: #d8434f;
+  --red-soft: #fbe6e7;
+  --blue: #2f6df6;
+  --blue-soft: #e6eefe;
+  --slate-soft: #eef1f5;
+  --slate-text: #475067;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* System font stacks — no network font fetch, so the app never fails
+     offline. Renders as San Francisco on macOS, Segoe UI on Windows, etc. */
+  --font-sans-stack: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono-stack: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans-stack);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  border-color: var(--border);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d3d7de;
+  border-radius: 999px;
+  border: 3px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #bfc4ce;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.22s ease-out both;
 }

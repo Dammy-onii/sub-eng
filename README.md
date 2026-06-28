@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nomba Recur — Subscriptions Engine
 
-## Getting Started
+A managed recurring-billing layer built on top of Nomba's payment primitives
+(Checkout, Tokenised Cards, Charge, Transfers). Nomba exposes raw payment APIs
+but no managed subscriptions layer, so every product team rebuilds billing from
+scratch. **Recur is that missing layer** — plan management, billing cycles,
+proration, dunning/recovery, a customer self-service portal, and webhooks for
+downstream systems.
 
-First, run the development server:
+> This repository is the **frontend** (a clickable prototype with an in-memory
+> mock engine). It is designed so a backend can be slotted in behind it without
+> touching the UI. Backend teams: start with [`docs/BACKEND_GUIDE.md`](docs/BACKEND_GUIDE.md).
+
+---
+
+## Running the project
+
+Requirements: **Node 18.18+** and npm.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install      # install dependencies
+npm run dev      # start the dev server → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Other scripts:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build    # production build
+npm run start    # serve the production build
+npm run lint     # eslint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+There is **no environment configuration** and **no backend** required to run the
+prototype — all data is seeded in memory and resets on refresh.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## What you can do in the app
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The app has two audiences, on two separate surfaces.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Merchant console (the dashboard with the dark sidebar)
 
-## Deploy on Vercel
+| Route             | What it does                                                          |
+| ----------------- | -------------------------------------------------------------------- |
+| `/`               | Overview — MRR, active/trialing/past-due counts, renewals, events    |
+| `/plans`          | Create / edit / archive plans, and manage **billing cycles**         |
+| `/subscriptions`  | List + filter; create a subscription; per-subscription detail        |
+| `/customers`      | List customers; per-customer detail (card, subs, invoices)           |
+| `/dunning`        | Failed-payment recovery queue + configurable retry **settings**      |
+| `/developers`     | Webhook endpoints, live event log, event catalog                     |
+| `/architecture`   | In-app explainer of how the engine works                             |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Customer self-service portal
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Route      | What it does                                                              |
+| ---------- | ------------------------------------------------------------------------ |
+| `/portal`  | One customer manages **their own** plan, card, invoices, and cancellation |
+
+---
+
+## Navigating the codebase
+
+The project is organised so that **routing, UI, features, and data are kept
+separate**. (Full detail in [`ARCHITECTURE.md`](ARCHITECTURE.md).)
+
+```
+app/            Routing only — every page is a thin wrapper around a feature
+  (console)/    Merchant dashboard routes (shared sidebar layout)
+  portal/       Customer portal route (separate layout)
+
+components/
+  ui/           Design-system primitives (Button, Card, Modal, Badge, …)
+  layout/       Sidebar, Topbar, ConsoleShell, PortalHeader
+  icons/        Inline SVG icons
+
+features/        One folder per feature; holds its page + local components
+  overview/ plans/ subscriptions/ customers/ dunning/ developers/
+  architecture/ portal/
+
+lib/
+  types.ts        The domain model (the source of truth for data shapes)
+  format.ts       Money/date formatting + status metadata
+  state-machine.ts Lifecycle transitions, proration, retry scheduling
+  seed.ts         Mock/seed data
+  store/          The in-memory "engine" (swap this for real API calls)
+    reducer.ts      pure state transitions (all business logic lives here)
+    selectors.ts    pure read helpers
+    StoreProvider.tsx  React context that binds actions + selectors
+
+docs/
+  BACKEND_GUIDE.md  Tables, endpoints, request/response shapes, webhooks
+```
+
+### Where to start reading
+
+1. **`lib/types.ts`** — every data shape the UI uses.
+2. **`lib/store/reducer.ts`** — every operation the engine performs.
+3. **`features/<name>/<Name>Page.tsx`** — the screen for each feature.
+4. **`app/(console)/<name>/page.tsx`** — the route that renders it.
+
+### Key conventions
+
+- `app/` contains **no business logic** — pages just render a feature component.
+- Imports use the **`@/` alias** (e.g. `@/lib/store`), which maps to the repo root.
+- All data flows through **`lib/store`** — it is the only thing a backend needs
+  to replace.
+
+---
+
+## Tech stack
+
+- **Next.js 16** (App Router, Turbopack) · **React 19** · **TypeScript**
+- **Tailwind CSS v4** for styling
+- System font stack (no external font fetch, so it runs fully offline)
+
+---
+
+## Documentation
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — folder structure & design principles
+- [`docs/BACKEND_GUIDE.md`](docs/BACKEND_GUIDE.md) — **for backend developers**:
+  database tables, REST endpoints, request/response payloads, forms, and webhooks
