@@ -1,0 +1,15 @@
+# Netlify deployment config for the Next.js (App Router) app.
+# The Next.js Runtime turns the build into serverless/edge functions so that
+# server-rendered routes work. Without it, Netlify serves `.next` as static
+# files and every route returns "Page not found".
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Next.js 16 requires a modern Node runtime.
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
